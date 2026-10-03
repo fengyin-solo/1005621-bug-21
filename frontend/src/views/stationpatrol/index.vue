@@ -24,6 +24,38 @@
       </span>
     </p>
 
+    <!-- 待整改台账：二次管网巡线上报发现的问题落到这里 -->
+    <section class="ledger-panel">
+      <h3>待整改台账（{{ rectificationLedger.length }}）</h3>
+      <table v-if="rectificationLedger.length" class="data-table">
+        <thead>
+          <tr>
+            <th>巡检编号</th>
+            <th>巡检站点</th>
+            <th>巡检路线</th>
+            <th>巡检人</th>
+            <th>巡检日期</th>
+            <th>发现问题数</th>
+            <th>整改期限</th>
+            <th>当前状态</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in rectificationLedger" :key="`ledger-${row.id}`">
+            <td>{{ row['巡检编号'] }}</td>
+            <td>{{ row['巡检站点'] }}</td>
+            <td>{{ row['巡检路线'] }}</td>
+            <td>{{ row['巡检人'] }}</td>
+            <td>{{ row['巡检日期'] }}</td>
+            <td>{{ row['发现问题数'] }}</td>
+            <td>{{ row['整改期限'] }}</td>
+            <td>{{ row.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p v-else class="ledger-empty">暂无待整改问题</p>
+    </section>
+
     <form class="filter-bar" @submit.prevent="reload">
       <label v-for="field in filterFields" :key="field" class="filter-item">
         <span>{{ field }}</span>
@@ -92,6 +124,7 @@ const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
 const filterFields = columns.slice(0, 3)
+const rectificationLedger = ref<EntryRow[]>([])
 const statusSummary = computed(() =>
   statuses.map((status: string) => ({
     status,
@@ -128,6 +161,10 @@ function reload() {
     const payload = listEntries(meta.key, filters.value)
     rows.value = payload.items
     total.value = payload.total
+    // 待整改台账不受筛选条件影响：已报问题、尚未整改的都在列。
+    rectificationLedger.value = listEntries(meta.key).items.filter(
+      (row) => ['待巡检', '巡检中'].includes(String(row.status)) && Number(row['发现问题数']) > 0,
+    )
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '站点巡检列表读取失败'
   }

@@ -68,4 +68,8 @@ npm run build
 - 字段、状态、动作与流转目标集中在 `frontend/src/data/modules.ts`；示例数据在
   `frontend/src/data/seed.ts`。
 - 状态流转只允许在 `local-service.ts` 里改，页面组件不做业务判断。
+- 状态机只许沿各模块 `statuses` 逐级向前，回退与越级都会被 `runAction` 拒收；随流转落库的字段
+  与状态在同一次写入里更新。二次管网「完成巡线」走巡线上报单：巡线周期、阀门井编号、投运日期
+  一次流转到位，重复提交只生效一次；上报发现的问题落到站点巡检的待整改台账。巡线详情与补录单
+  都经 `getEntry` 读同一份记录，投运日期空缺的管段在二次管网页单列一栏进补录。
 - 想回到初始数据：清掉浏览器里 `district-heating:entries` 这一项，或调用 `resetModule(模块)`。
